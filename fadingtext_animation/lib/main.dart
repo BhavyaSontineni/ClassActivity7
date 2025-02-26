@@ -42,6 +42,8 @@ class FadingTextScreen extends StatefulWidget {
 class _FadingTextScreenState extends State<FadingTextScreen> {
   bool _isVisible = true;
   Color _textColor = Colors.black;
+  bool _showFrame = false;
+  bool _isRotating = false;
 
   void _toggleVisibility() {
     setState(() {
@@ -54,7 +56,7 @@ class _FadingTextScreenState extends State<FadingTextScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Pick a text color"),
+          title: const Text("Pick a text color"),
           content: SingleChildScrollView(
             child: ColorPicker(
               pickerColor: _textColor,
@@ -67,7 +69,7 @@ class _FadingTextScreenState extends State<FadingTextScreen> {
           ),
           actions: [
             TextButton(
-              child: Text("Done"),
+              child: const Text("Done"),
               onPressed: () => Navigator.of(context).pop(),
             )
           ],
@@ -80,27 +82,28 @@ class _FadingTextScreenState extends State<FadingTextScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Fading Text Animation'),
+        title: const Text('Fading Text Animation'),
         actions: [
           IconButton(
-            icon: Icon(Icons.brightness_6),
+            icon: const Icon(Icons.brightness_6),
             onPressed: widget.toggleTheme,
           ),
           IconButton(
-            icon: Icon(Icons.color_lens),
+            icon: const Icon(Icons.color_lens),
             onPressed: _changeTextColor,
           ),
         ],
       ),
       body: PageView(
         children: [
-          _buildFadingTextPage(Duration(seconds: 1)),
-          _buildFadingTextPage(Duration(seconds: 3)),
+          _buildFadingTextPage(const Duration(seconds: 1)),
+          _buildFadingTextPage(const Duration(seconds: 3)),
+          _buildAnimatedImage(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _toggleVisibility,
-        child: Icon(Icons.play_arrow),
+        child: const Icon(Icons.play_arrow),
       ),
     );
   }
@@ -110,11 +113,53 @@ class _FadingTextScreenState extends State<FadingTextScreen> {
       child: AnimatedOpacity(
         opacity: _isVisible ? 1.0 : 0.0,
         duration: duration,
+        curve: Curves.easeInOut,
         child: Text(
           'Hello, Flutter!',
           style: TextStyle(fontSize: 24, color: _textColor),
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedImage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isRotating = !_isRotating;
+            });
+          },
+          child: AnimatedRotation(
+            turns: _isRotating ? 1.0 : 0.0,
+            duration: const Duration(seconds: 2),
+            curve: Curves.easeInOut,
+            child: AnimatedContainer(
+              duration: const Duration(seconds: 1),
+              decoration: BoxDecoration(
+                border: _showFrame ? Border.all(color: Colors.blue, width: 4) : null,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Image.network(
+                'https://flutter.dev/assets/homepage/carousel/slide_1-layer_0-6bdeab06e71d1a1579a054c5391b2937.png',
+                width: 200,
+                height: 200,
+              ),
+            ),
+          ),
+        ),
+        SwitchListTile(
+          title: const Text('Show Frame'),
+          value: _showFrame,
+          onChanged: (bool value) {
+            setState(() {
+              _showFrame = value;
+            });
+          },
+        ),
+      ],
     );
   }
 }
